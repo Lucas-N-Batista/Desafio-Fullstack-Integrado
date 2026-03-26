@@ -10,8 +10,7 @@
 Este projeto deve ser mantido em `Java 17`.
 
 - `Java 17` é a baseline oficial do projeto para desenvolvimento local, build, testes e CI.
-- `Java 21` não é o alvo atual desta solução.
-- Se o VS Code estiver usando um JDK mais novo, alinhe o workspace para `JavaSE-17` em vez de alterar o projeto.
+
 
 ### Configuração local recomendada
 

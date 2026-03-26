@@ -1,0 +1,86 @@
+<div class="card" style="max-width:620px; margin:0 auto;">
+  <h2>💸 Transferência de Saldo</h2>
+
+  <!-- Notificações -->
+  <app-notification
+    [mensagemSucesso]="(mensagemSucesso$ | async)"
+    [mensagemErro]="(erro$ | async)">
+  </app-notification>
+
+  <!-- Info contextual -->
+  <div class="alert alert-info" style="margin-bottom:1.25rem;">
+    ℹ️ A transferência verifica saldo em tempo real e usa <strong>Pessimistic Lock</strong>
+    para evitar inconsistências em operações simultâneas.
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+
+    <!-- Origem -->
+    <div class="form-group">
+      <label for="origem">Benefício de Origem *</label>
+      <select id="origem" formControlName="origemId">
+        <option value="">— Selecione a origem —</option>
+        <option *ngFor="let b of beneficios" [value]="b.id">
+          {{ b.nome }} ({{ formatarValor(b.valor) }})
+        </option>
+      </select>
+      <span class="error-msg" *ngIf="hasError('origemId', 'required')">Selecione o benefício de origem.</span>
+
+      <!-- Saldo disponível da origem -->
+      <div *ngIf="saldoOrigem !== null" style="margin-top:.4rem; font-size:.85rem; color:#1b5e20;">
+        💰 Saldo disponível: <strong>{{ formatarValor(saldoOrigem) }}</strong>
+      </div>
+    </div>
+
+    <!-- Destino -->
+    <div class="form-group">
+      <label for="destino">Benefício de Destino *</label>
+      <select id="destino" formControlName="destinoId">
+        <option value="">— Selecione o destino —</option>
+        <option *ngFor="let b of beneficios" [value]="b.id">
+          {{ b.nome }} ({{ formatarValor(b.valor) }})
+        </option>
+      </select>
+      <span class="error-msg" *ngIf="hasError('destinoId', 'required')">Selecione o benefício de destino.</span>
+    </div>
+
+    <!-- Validação cruzada: origem == destino -->
+    <div class="alert alert-error" *ngIf="hasGroupError('origemDestinoIguais')">
+      ⚠️ Origem e destino não podem ser o mesmo benefício.
+    </div>
+
+    <!-- Valor -->
+    <div class="form-group">
+      <label for="valor">Valor a Transferir (R$) *</label>
+      <input
+        id="valor"
+        type="number"
+        formControlName="valor"
+        placeholder="0.00"
+        min="0.01"
+        step="0.01"
+        aria-required="true"
+      />
+      <span class="error-msg" *ngIf="hasError('valor', 'required')">Valor é obrigatório.</span>
+      <span class="error-msg" *ngIf="hasError('valor', 'min')">Valor deve ser maior que zero.</span>
+    </div>
+
+    <!-- Validação cruzada: saldo insuficiente (validada no frontend) -->
+    <div class="alert alert-warning" *ngIf="hasGroupError('saldoInsuficiente')">
+      ⚠️ Valor solicitado excede o saldo disponível da origem ({{ formatarValor(saldoOrigem ?? 0) }}).
+    </div>
+
+    <!-- Ações -->
+    <div style="display:flex; gap:.75rem; margin-top:1.5rem;">
+      <button
+        type="submit"
+        class="btn btn-success"
+        [disabled]="form.invalid || (transferindo$ | async)">
+        <span *ngIf="!(transferindo$ | async)">💸 Transferir</span>
+        <span *ngIf="transferindo$ | async">⏳ Transferindo...</span>
+      </button>
+      <a routerLink="/beneficios" class="btn btn-secondary">↩️ Voltar</a>
+    </div>
+
+  </form>
+</div>

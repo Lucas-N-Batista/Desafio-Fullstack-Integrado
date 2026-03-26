@@ -1,0 +1,83 @@
+<div class="card">
+  <h2>📋 Lista de Benefícios</h2>
+
+  <!-- Notificações -->
+  <app-notification
+    [mensagemSucesso]="(mensagemSucesso$ | async)"
+    [mensagemErro]="(erro$ | async)">
+  </app-notification>
+
+  <!-- Barra de ferramentas -->
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:.75rem;">
+    <div class="form-group" style="margin:0; flex:1; min-width:220px;">
+      <input
+        type="text"
+        placeholder="🔍 Filtrar por nome..."
+        (input)="onFiltrar($event)"
+        aria-label="Filtrar benefícios por nome"
+      />
+    </div>
+    <div style="display:flex; gap:.5rem; align-items:center;">
+      <span style="font-size:.85rem; color:#666;">
+        Saldo total: <strong class="valor">{{ formatarValor((saldoTotal$ | async) ?? 0) }}</strong>
+      </span>
+      <a routerLink="/beneficios/novo" class="btn btn-primary btn-sm">
+        ➕ Novo Benefício
+      </a>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="carregando$ | async" class="spinner" aria-label="Carregando..."></div>
+
+  <!-- Tabela de benefícios -->
+  <div *ngIf="!(carregando$ | async)" style="overflow-x:auto;">
+    <table class="table" aria-label="Tabela de benefícios">
+      <thead>
+        <tr>
+          <th scope="col">ID</th>
+          <th scope="col">Nome</th>
+          <th scope="col">Descrição</th>
+          <th scope="col">Saldo</th>
+          <th scope="col">Status</th>
+          <th scope="col">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let b of beneficios$ | async; trackBy: trackById">
+          <td>{{ b.id }}</td>
+          <td><strong>{{ b.nome }}</strong></td>
+          <td>{{ b.descricao || '—' }}</td>
+          <td>
+            <span class="valor" [class.zero]="b.valor === 0">
+              {{ formatarValor(b.valor) }}
+            </span>
+          </td>
+          <td>
+            <span class="badge" [class.ativo]="b.ativo" [class.inativo]="!b.ativo">
+              {{ b.ativo ? 'Ativo' : 'Inativo' }}
+            </span>
+          </td>
+          <td>
+            <div style="display:flex; gap:.4rem;">
+              <a [routerLink]="['/beneficios', b.id, 'editar']"
+                 class="btn btn-secondary btn-sm"
+                 title="Editar">✏️</a>
+              <button
+                class="btn btn-danger btn-sm"
+                (click)="onRemover(b.id, b.nome)"
+                [disabled]="!b.ativo"
+                title="Remover">🗑️</button>
+            </div>
+          </td>
+        </tr>
+        <!-- Estado vazio -->
+        <tr *ngIf="(beneficios$ | async)?.length === 0 && !(carregando$ | async)">
+          <td colspan="6" style="text-align:center; color:#999; padding:2rem;">
+            Nenhum benefício encontrado.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

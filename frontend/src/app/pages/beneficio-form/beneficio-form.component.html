@@ -1,0 +1,79 @@
+<div class="card" style="max-width:600px; margin:0 auto;">
+  <h2>{{ titulo }}</h2>
+
+  <!-- Erro de operação -->
+  <div *ngIf="erroMsg" class="alert alert-error">❌ {{ erroMsg }}</div>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+
+    <!-- Nome -->
+    <div class="form-group">
+      <label for="nome">Nome *</label>
+      <input
+        id="nome"
+        type="text"
+        formControlName="nome"
+        placeholder="Ex: Vale Alimentação"
+        [class.ng-invalid]="campo('nome').invalid && campo('nome').touched"
+        aria-required="true"
+      />
+      <span class="error-msg" *ngIf="hasError('nome', 'required')">Nome é obrigatório.</span>
+      <span class="error-msg" *ngIf="hasError('nome', 'minlength')">Mínimo 2 caracteres.</span>
+      <span class="error-msg" *ngIf="hasError('nome', 'maxlength')">Máximo 100 caracteres.</span>
+    </div>
+
+    <!-- Descrição -->
+    <div class="form-group">
+      <label for="descricao">Descrição</label>
+      <input
+        id="descricao"
+        type="text"
+        formControlName="descricao"
+        placeholder="Ex: Benefício de alimentação mensal"
+      />
+      <span class="error-msg" *ngIf="hasError('descricao', 'maxlength')">Máximo 255 caracteres.</span>
+    </div>
+
+    <!-- Valor -->
+    <div class="form-group">
+      <label for="valor">Valor (R$) *</label>
+      <input
+        id="valor"
+        type="number"
+        formControlName="valor"
+        placeholder="0.00"
+        min="0"
+        step="0.01"
+        aria-required="true"
+      />
+      <span class="error-msg" *ngIf="hasError('valor', 'required')">Valor é obrigatório.</span>
+      <span class="error-msg" *ngIf="hasError('valor', 'min')">Valor não pode ser negativo.</span>
+    </div>
+
+    <!-- Ativo -->
+    <div class="form-group" style="display:flex; align-items:center; gap:.75rem;">
+      <input
+        id="ativo"
+        type="checkbox"
+        formControlName="ativo"
+        style="width:auto; cursor:pointer;"
+      />
+      <label for="ativo" style="margin:0; cursor:pointer;">Benefício ativo</label>
+    </div>
+
+    <!-- Ações -->
+    <div style="display:flex; gap:.75rem; margin-top:1.5rem;">
+      <button
+        type="submit"
+        class="btn btn-success"
+        [disabled]="salvando">
+        <span *ngIf="!salvando">💾 {{ modoEdicao ? 'Salvar Alterações' : 'Criar Benefício' }}</span>
+        <span *ngIf="salvando">⏳ Salvando...</span>
+      </button>
+      <button type="button" class="btn btn-secondary" (click)="onCancelar()">
+        ↩️ Cancelar
+      </button>
+    </div>
+
+  </form>
+</div>

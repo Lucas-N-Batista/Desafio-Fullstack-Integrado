@@ -1,0 +1,48 @@
+# ===== Java / Maven =====
+target/
+*.class
+*.jar
+*.war
+*.ear
+!**/src/main/**/target/
+!**/src/test/**/target/
+.mvn/wrapper/maven-wrapper.jar
+.mvn/timing.properties
+.classpath
+.project
+.settings/
+.factorypath
+
+# ===== Spring Boot =====
+spring-shell.log
+application-local.yml
+application-local.properties
+
+# ===== Angular / Node =====
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+frontend/.cache/
+frontend/coverage/
+frontend/out-tsc/
+
+# ===== IDE =====
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+nbproject/
+
+# ===== Docker =====
+.docker/
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# ===== Logs =====
+*.log
+logs/

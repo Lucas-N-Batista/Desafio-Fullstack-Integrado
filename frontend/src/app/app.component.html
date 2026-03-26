@@ -1,0 +1,26 @@
+<!-- Cabeçalho da aplicação -->
+<header class="app-header">
+  <div class="container">
+    <h1>🏦 {{ titulo }}</h1>
+    <span class="subtitle">Gerenciamento de benefícios com transferência de saldo</span>
+  </div>
+</header>
+
+<!-- Navegação principal -->
+<nav class="app-nav">
+  <div class="container" style="display:flex; gap:1rem;">
+    <a routerLink="/beneficios"    routerLinkActive="active">📋 Benefícios</a>
+    <a routerLink="/beneficios/novo" routerLinkActive="active">➕ Novo Benefício</a>
+    <a routerLink="/transferencias" routerLinkActive="active">💸 Transferência</a>
+  </div>
+</nav>
+
+<!-- Conteúdo dinâmico da rota -->
+<main class="container" style="padding-top:2rem; padding-bottom:2rem;">
+  <router-outlet></router-outlet>
+</main>
+
+<!-- Rodapé -->
+<footer style="background:#1976d2; color:#fff; text-align:center; padding:.75rem; font-size:.82rem; margin-top:auto;">
+  Desafio Fullstack Integrado &mdash; Correção EJB + Angular + Java
+</footer>

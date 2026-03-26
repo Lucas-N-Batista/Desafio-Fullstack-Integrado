@@ -1,0 +1,76 @@
+# ============================================================
+# Configuração principal do Spring Boot - Produção
+# ============================================================
+
+spring:
+  application:
+    name: desafio-backend
+
+  # --- JPA / PostgreSQL ---
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/desafio}
+    username: ${SPRING_DATASOURCE_USERNAME:desafio}
+    password: ${SPRING_DATASOURCE_PASSWORD:desafio}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate            # Schema gerenciado pelos scripts db/schema.sql
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        default_schema: public
+        # Suporte a pessimistic locking no PostgreSQL
+        jdbc:
+          lob:
+            non_contextual_creation: true
+    show-sql: false
+    open-in-view: false             # Evita anti-padrão OSIV
+
+  # --- Mensagens de validação em PT ---
+  messages:
+    basename: messages/validation
+    encoding: UTF-8
+
+# --- Servidor ---
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: /
+  error:
+    include-message: always
+    include-binding-errors: always
+
+# --- Swagger / OpenAPI ---
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+    try-it-out-enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+# --- Logs ---
+logging:
+  level:
+    root: INFO
+    com.desafio: DEBUG
+    org.springframework.web: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql: TRACE

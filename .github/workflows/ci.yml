@@ -1,0 +1,157 @@
+##############################################################
+# GitHub Actions CI – Desafio Fullstack Integrado
+# Executa: testes EJB + testes Backend + build Frontend
+##############################################################
+name: CI – Desafio Fullstack
+
+on:
+  push:
+    branches: ["main", "master", "develop"]
+  pull_request:
+    branches: ["main", "master"]
+
+env:
+  JAVA_VERSION: '17'
+  NODE_VERSION: '20'
+
+jobs:
+
+  # ─────────────────────────────────────────────────
+  # 1. Testes do módulo EJB (JUnit 5 + Mockito)
+  # ─────────────────────────────────────────────────
+  test-ejb:
+    name: 🧪 Testes EJB Module
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configura JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: temurin
+          cache: maven
+
+      - name: Executa testes do ejb-module
+        run: mvn -B test -pl ejb-module
+
+      - name: Upload relatório de testes EJB
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ejb-test-report
+          path: ejb-module/target/surefire-reports/
+
+  # ─────────────────────────────────────────────────
+  # 2. Testes + Build do Backend Spring Boot
+  # ─────────────────────────────────────────────────
+  test-backend:
+    name: 🧪 Testes Backend + Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configura JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: temurin
+          cache: maven
+
+      - name: Build ejb-module (dependência do backend)
+        run: mvn -B install -pl ejb-module -DskipTests
+
+      - name: Executa testes do backend-module (H2 in-memory)
+        run: mvn -B test -pl backend-module
+
+      - name: Build fat JAR do backend
+        run: mvn -B package -pl backend-module -DskipTests
+
+      - name: Upload JAR gerado
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-jar
+          path: backend-module/target/*.jar
+
+      - name: Upload relatório de testes Backend
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-test-report
+          path: backend-module/target/surefire-reports/
+
+  # ─────────────────────────────────────────────────
+  # 3. Testes + Build do Frontend Angular
+  # ─────────────────────────────────────────────────
+  test-frontend:
+    name: 🧪 Testes Angular + Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configura Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Instala dependências npm
+        working-directory: frontend
+        run: npm install --legacy-peer-deps
+
+      - name: Executa testes Karma/Jasmine (headless)
+        working-directory: frontend
+        run: npm test -- --watch=false --browsers=ChromeHeadless --no-progress
+
+      - name: Build Angular produção
+        working-directory: frontend
+        run: npm run build
+
+      - name: Upload artefato frontend
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist/
+
+  # ─────────────────────────────────────────────────
+  # 4. Build Docker (verifica que as imagens constroem)
+  # ─────────────────────────────────────────────────
+  build-docker:
+    name: 🐳 Verifica Build Docker
+    runs-on: ubuntu-latest
+    needs: [test-ejb, test-backend, test-frontend]
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configura Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Verifica sintaxe do docker-compose.yml
+        run: docker compose config --quiet
+
+      - name: Build imagem Backend (sem push)
+        uses: docker/build-push-action@v5
+        with:
+          context:   .
+          file:      backend-module/Dockerfile
+          push:      false
+          tags:      desafio-backend:ci
+          cache-from: type=gha
+          cache-to:   type=gha,mode=max
+
+      - name: Build imagem Frontend (sem push)
+        uses: docker/build-push-action@v5
+        with:
+          context:   frontend
+          file:      frontend/Dockerfile
+          push:      false
+          tags:      desafio-frontend:ci
+          cache-from: type=gha
+          cache-to:   type=gha,mode=max
